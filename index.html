@@ -338,6 +338,13 @@
     const yen = value => `${Math.round(value).toLocaleString("ja-JP")}万円`;
     const oku = value => value >= 10000 ? `${(value / 10000).toFixed(2)}億円` : yen(value);
     const percent = value => `${(value * 100).toFixed(1)}%`;
+    const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[char]);
 
     function loanPayment(principal, annualRate, years) {
       if (principal <= 0) return 0;
@@ -387,7 +394,7 @@
       const maxProfit = Math.max(...data.rows.map(row => row.profit), 1);
       document.getElementById("stores").innerHTML = data.rows.map(row => `
         <article class="card store">
-          <div class="name">${row.name}</div>
+          <div class="name">${escapeHTML(row.name)}</div>
           <div class="profit">${yen(row.profit)}</div>
           <div class="mini">年商 ${yen(row.sales)} / 利益率 ${percent(row.margin)} / 賃料 ${yen(row.rent)}/年</div>
           <div class="bar"><i style="--w:${Math.max(6, row.profit / maxProfit * 100)}%"></i></div>

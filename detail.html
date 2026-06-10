@@ -463,6 +463,13 @@
     const yen = value => `${Math.round(value).toLocaleString("ja-JP")}万円`;
     const oku = value => value >= 10000 ? `${(value / 10000).toFixed(2)}億円` : yen(value);
     const pct = value => `${(value * 100).toFixed(1)}%`;
+    const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[char]);
 
     function loanPayment(principal, annualRate, years) {
       if (principal <= 0) return 0;
@@ -506,7 +513,7 @@
       const tbody = document.querySelector("#storeTable tbody");
       tbody.innerHTML = data.rows.map(row => `
         <tr>
-          <td>${row.name}<br><span class="note">${row.type} / ${row.area}坪</span></td>
+          <td>${escapeHTML(row.name)}<br><span class="note">${escapeHTML(row.type)} / ${row.area}坪</span></td>
           <td>${yen(row.sales)}</td>
           <td>${yen(row.cogs)}</td>
           <td>${yen(row.labor)}</td>
