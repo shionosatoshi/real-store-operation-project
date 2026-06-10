@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>東京都内 3店舗誘致プロジェクト 事業試算</title>
+  <style>
+    :root {
+      --ink: #202326;
+      --muted: #6b7280;
+      --line: #d9ded8;
+      --paper: #fbfaf6;
+      --panel: #ffffff;
+      --green: #2f6f55;
+      --brick: #a64b38;
+      --gold: #b8822b;
+      --blue: #355f7c;
+      --soft: #eef3ef;
+      --shadow: 0 12px 30px rgba(22, 28, 34, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, system-ui, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #f3f2ec 0%, var(--paper) 420px);
+      line-height: 1.65;
+    }
+
+    header {
+      min-height: 78vh;
+      display: grid;
+      align-items: end;
+      padding: 40px 5vw 54px;
+      background:
+        linear-gradient(90deg, rgba(20, 28, 24, .72), rgba(20, 28, 24, .2)),
+        url("https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1800&q=80") center / cover;
+      color: #fff;
+    }
+
+    .hero {
+      max-width: 960px;
+    }
+
+    .eyebrow {
+      font-size: 14px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .86;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 7vw, 72px);
+      line-height: 1.08;
+      letter-spacing: 0;
+      max-width: 900px;
+    }
+
+    .lead {
+      max-width: 720px;
+      font-size: clamp(16px, 2vw, 21px);
+      margin: 22px 0 0;
+      color: rgba(255,255,255,.92);
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 34px 18px 72px;
+    }
+
+    section {
+      margin: 38px 0;
+    }
+
+    h2 {
+      font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.25;
+      margin: 0 0 14px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      font-size: 18px;
+      margin: 0 0 12px;
+    }
+
+    p { margin: 0 0 14px; }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .metric {
+      display: grid;
+      gap: 4px;
+    }
+
+    .metric strong {
+      font-size: clamp(24px, 3vw, 36px);
+      line-height: 1.1;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--green);
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    th:first-child, td:first-child {
+      text-align: left;
+      white-space: normal;
+    }
+
+    th {
+      background: #eef0ea;
+      color: #333;
+      font-size: 13px;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .warn {
+      border-left: 5px solid var(--brick);
+      background: #fff7f4;
+    }
+
+    .ok {
+      border-left: 5px solid var(--green);
+      background: #f4faf6;
+    }
+
+    .chart-wrap {
+      min-height: 260px;
+      display: grid;
+      align-items: center;
+    }
+
+    canvas {
+      width: 100%;
+      height: 260px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 11px;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .scenario {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 92px;
+      gap: 12px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .bar {
+      height: 13px;
+      background: #e2e6de;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar > i {
+      display: block;
+      height: 100%;
+      width: var(--w);
+      background: var(--green);
+    }
+
+    .footer {
+      border-top: 1px solid var(--line);
+      padding-top: 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    a { color: var(--blue); }
+
+    @media (max-width: 860px) {
+      header { min-height: 68vh; }
+      .grid.cols-3, .grid.cols-2, .scenario, .controls { grid-template-columns: 1fr; }
+      table { display: block; overflow-x: auto; }
+      th, td { font-size: 13px; }
+      .bar-row { grid-template-columns: 88px 1fr 80px; }
+    }
+
+    @media print {
+      header { min-height: auto; color: var(--ink); background: #fff; padding: 24px 0; }
+      main { padding: 0; }
+      .card, table { box-shadow: none; }
+      input { border: 0; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hero">
+      <div class="eyebrow">Owner Planning Draft | Tokyo Retail Complex</div>
+      <h1>パン・コーヒー・和菓子を集める小さな食の街区計画</h1>
+      <p class="lead">自己資金1,000万円を起点に、所有地へ3店舗を誘致する場合の収支、建築費、賃料、回収性を試算した父親説明用のたたき台です。</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="grid cols-3">
+      <div class="card metric">
+        <span>想定延床面積</span>
+        <strong id="totalArea">45坪</strong>
+        <span>15坪 x 3区画。小型路面店を想定。</span>
+      </div>
+      <div class="card metric">
+        <span>オーナー自己資金</span>
+        <strong id="equityTop">1,000万円</strong>
+        <span>建物新築では融資併用が前提。</span>
+      </div>
+      <div class="card metric">
+        <span>基準賃料</span>
+        <strong id="baseRentTop">96万円/月</strong>
+        <span>坪2.13万円。都内平均よりやや抑えた誘致型。</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>結論サマリー</h2>
+      <div class="grid cols-2">
+        <div class="card ok">
+          <h3>実行しやすい設計</h3>
+          <p>土地をすでに所有している強みを活かし、賃料を「都内1階平均より少し低め」に設定すると、3業態の採算が残りやすく、空室リスクも抑えられます。オーナーは建物を所有し、各店から固定賃料と売上歩合を受け取る形が現実的です。</p>
+        </div>
+        <div class="card warn">
+          <h3>最大の注意点</h3>
+          <p>新築費は45坪の小型店舗でも概算4,500万から5,400万円程度になりやすく、自己資金1,000万円だけでは不足します。初期は「スケルトン建物をオーナーが整備、内装・厨房はテナント負担」または「借入4,000万円前後」が必要です。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>前提条件</h2>
+      <table>
+        <thead>
+          <tr><th>項目</th><th>今回の基準値</th><th>根拠・考え方</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>立地</td><td>東京都内の生活商圏</td><td>都心一等地ではなく、住宅地・駅周辺・商店街寄りの誘致型を想定</td></tr>
+          <tr><td>店舗賃料</td><td>21,333円/坪/月</td><td>都内1階平均31,307円/坪より低く、テナント採算を優先</td></tr>
+          <tr><td>東京都最低賃金</td><td>1,226円/時</td><td>2025年10月3日発効。実務上は1,300円から1,600円程度の採用単価も想定</td></tr>
+          <tr><td>建築費</td><td>100万円/坪</td><td>木造から軽量鉄骨の小型店舗。躯体・設備の概算、内装厨房は別</td></tr>
+          <tr><td>営業日</td><td>300日/年</td><td>週1定休、年末年始・臨時休業込み</td></tr>
+          <tr><td>オーナー借入</td><td>4,000万円</td><td>建築総額5,000万円、自己資金1,000万円、20年・年2.0%返済</td></tr>
+        </tbody>
+      </table>
+      <p class="note">注: 住所・用途地域・建ぺい率・容積率・接道・防火地域・設備引込状況で大きく変わります。正式判断前に建築士、税理士、金融機関、不動産会社で精査してください。</p>
+    </section>
+
+    <section>
+      <h2>3店舗の損益予測</h2>
+      <div class="scenario">
+        <div>
+          <table id="storeTable">
+            <thead>
+              <tr>
+                <th>店舗</th>
+                <th>年商</th>
+                <th>原価</th>
+                <th>人件費</th>
+                <th>賃料</th>
+                <th>営業利益</th>
+                <th>利益率</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="card chart-wrap">
+          <canvas id="profitChart" width="720" height="360" aria-label="店舗別営業利益グラフ"></canvas>
+        </div>
+      </div>
+      <p class="note">売上に対する賃料比率は各店10%前後を目安に置いています。飲食店では原価、人件費、賃料を合わせたFLRが70%以下だと比較的健全という考え方を採用しています。</p>
+    </section>
+
+    <section>
+      <h2>オーナー側の収支</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>年間キャッシュフロー概算</h3>
+          <table>
+            <tbody>
+              <tr><td>年間賃料収入</td><td id="ownerRevenue">1,152万円</td></tr>
+              <tr><td>固定資産税・保険・修繕積立</td><td id="ownerCost">250万円</td></tr>
+              <tr><td>借入返済</td><td id="ownerDebt">243万円</td></tr>
+              <tr><td><strong>税前手残り</strong></td><td><strong id="ownerCash">629万円</strong></td></tr>
+              <tr><td>自己資金利回り</td><td id="equityYield">62.9%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>建築費と賃料の関係</h3>
+          <div class="bar-list">
+            <div class="bar-row"><span>郊外寄り</span><div class="bar"><i style="--w:56%"></i></div><strong>81万円/月</strong></div>
+            <div class="bar-row"><span>基準案</span><div class="bar"><i style="--w:67%"></i></div><strong id="rentCaseBase">96万円/月</strong></div>
+            <div class="bar-row"><span>都内平均</span><div class="bar"><i style="--w:98%"></i></div><strong>141万円/月</strong></div>
+            <div class="bar-row"><span>都心寄り</span><div class="bar"><i style="--w:100%"></i></div><strong>203万円/月</strong></div>
+          </div>
+          <p class="note">45坪全体の賃料。高く貸せるほどオーナー収益は増えますが、テナントの利益が減り、退店リスクが上がります。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>不動産・建設の詳細</h2>
+      <table>
+        <thead>
+          <tr><th>項目</th><th>低め</th><th>基準</th><th>高め</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>店舗面積</td><td>36坪</td><td>45坪</td><td>60坪</td></tr>
+          <tr><td>建築坪単価</td><td>80万円</td><td>100万円</td><td>120万円</td></tr>
+          <tr><td>建物総額</td><td>2,880万円</td><td>4,500万円</td><td>7,200万円</td></tr>
+          <tr><td>設計・外構・予備費</td><td>400万円</td><td>500万円</td><td>900万円</td></tr>
+          <tr><td>総投資</td><td>3,280万円</td><td>5,000万円</td><td>8,100万円</td></tr>
+          <tr><td>貸出賃料目安</td><td>72万円/月</td><td>96万円/月</td><td>180万円/月</td></tr>
+        </tbody>
+      </table>
+      <p class="note">土地は所有済みとして購入費を入れていません。ただし、東京の商業地平均は高水準で上昇しているため、土地を他用途に使う機会損失も比較対象に入れるべきです。</p>
+    </section>
+
+    <section>
+      <h2>ゲーム化デモ: 数字を動かす</h2>
+      <div class="card">
+        <div class="controls">
+          <label>パン屋 店舗名<input id="name0" value="朝のパン工房"></label>
+          <label>コーヒー 店舗名<input id="name1" value="街角ロースタリー"></label>
+          <label>和菓子 店舗名<input id="name2" value="季節の菓子処"></label>
+          <label>自己資金 万円<input id="equity" type="number" min="0" step="100" value="1000"></label>
+          <label>売上倍率<input id="salesFactor" type="number" min="0.5" max="2" step="0.05" value="1"></label>
+          <label>賃料 坪単価 円/月<input id="rentPerTsubo" type="number" min="8000" max="70000" step="1000" value="21333"></label>
+          <label>建築坪単価 万円<input id="buildCost" type="number" min="60" max="180" step="5" value="100"></label>
+          <label>利益率補正 %<input id="marginBoost" type="number" min="-10" max="10" step="1" value="0"></label>
+        </div>
+      </div>
+      <div class="grid cols-3" style="margin-top:16px">
+        <div class="card metric"><span>3店舗合計年商</span><strong id="simSales">1.15億円</strong><span>売上倍率で変化</span></div>
+        <div class="card metric"><span>オーナー年間手残り</span><strong id="simOwnerCash">629万円</strong><span>税前、返済後</span></div>
+        <div class="card metric"><span>必要借入</span><strong id="simLoan">4,000万円</strong><span>建築費から自己資金を控除</span></div>
+      </div>
+      <p class="note">この部分が後でゲームになります。プレイヤーは店舗名、売上、賃料、建築費、頭金を変更し、テナント満足度、空室リスク、オーナー利回りを見ながら運営判断を体験できます。</p>
+    </section>
+
+    <section>
+      <h2>運営方針案</h2>
+      <div class="grid cols-3">
+        <div class="card">
+          <span class="pill">パン屋サブエージェント</span>
+          <p>朝需要を作る主役。焼き上がり時間をコーヒー店と連動し、平日朝と週末昼を強化します。廃棄率が利益を削るため、予約・取り置き・夕方割引を最初から設計します。</p>
+        </div>
+        <div class="card">
+          <span class="pill">コーヒーサブエージェント</span>
+          <p>滞在と回遊を作る店。パン・和菓子とのセット販売、豆販売、サブスクで粗利を底上げします。席数を増やしすぎず、回転率と物販の両方を見ます。</p>
+        </div>
+        <div class="card">
+          <span class="pill">和菓子サブエージェント</span>
+          <p>手土産・季節催事の利益源。単価を上げやすい一方、職人依存が強いので、予約販売と催事カレンダーで繁忙期を先読みします。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="footer">
+      <h2>参照した公開情報</h2>
+      <p>店舗賃料: <a href="https://souba.builds.jp/tenant/13">店舗相場TOWN 東京都店舗相場</a>、東京駅周辺例: <a href="https://www.inshokuten.com/bukken/kanto/market/rent/result/?q%5Bline_id%5D=8&q%5Bstation_id%5D=151">飲食店ドットコム 店舗賃料相場</a>、最低賃金: <a href="https://jsite.mhlw.go.jp/tokyo-roudoukyoku/news_topics/houdou/20230901chinginka_00001.html">東京労働局</a>、地価: <a href="https://www.zaimu.metro.tokyo.lg.jp/kijunchi/chikakouji/r8kouji">東京都財務局 令和8年地価公示</a>、FLR目安: <a href="https://www.cotta.jp/business/chef-pedia/?p=15">cotta 店舗経営とFLコスト</a>、建築費: <a href="https://archi-book.com/news/detail/113">アーキブック 商業店舗の建築費</a>、構造別建築費例: <a href="https://www.mokken-techs.com/new/1575/">木建テックス 事務所建設費</a></p>
+      <p>この資料は2026年6月10日時点の概算です。実際の投資判断では、対象地の住所、面積、法規制、既存インフラ、想定テナント候補の実績を入れて再試算してください。</p>
+    </section>
+  </main>
+
+  <script>
+    const area = 45;
+    const stores = [
+      { type: "パン屋", name: "朝のパン工房", area: 15, annualSales: 4680, cogs: .32, labor: .30, other: .18 },
+      { type: "コーヒー屋", name: "街角ロースタリー", area: 15, annualSales: 3600, cogs: .28, labor: .32, other: .18 },
+      { type: "和菓子屋", name: "季節の菓子処", area: 15, annualSales: 3240, cogs: .30, labor: .28, other: .20 }
+    ];
+
+    const yen = value => `${Math.round(value).toLocaleString("ja-JP")}万円`;
+    const oku = value => value >= 10000 ? `${(value / 10000).toFixed(2)}億円` : yen(value);
+    const pct = value => `${(value * 100).toFixed(1)}%`;
+
+    function loanPayment(principal, annualRate, years) {
+      if (principal <= 0) return 0;
+      const r = annualRate / 12;
+      const n = years * 12;
+      return principal * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1) * 12;
+    }
+
+    function readInputs() {
+      return {
+        names: [0, 1, 2].map(i => document.getElementById(`name${i}`).value || stores[i].type),
+        equity: Number(document.getElementById("equity").value || 0),
+        salesFactor: Number(document.getElementById("salesFactor").value || 1),
+        rentPerTsubo: Number(document.getElementById("rentPerTsubo").value || 0),
+        buildCost: Number(document.getElementById("buildCost").value || 100),
+        marginBoost: Number(document.getElementById("marginBoost").value || 0) / 100
+      };
+    }
+
+    function compute() {
+      const input = readInputs();
+      const rentAnnualTotal = input.rentPerTsubo * area * 12 / 10000;
+      const buildTotal = input.buildCost * area + 500;
+      const loan = Math.max(0, buildTotal - input.equity);
+      const debt = loanPayment(loan, .02, 20);
+      const ownerCost = 250 + buildTotal * .006;
+      const rows = stores.map((store, index) => {
+        const sales = store.annualSales * input.salesFactor;
+        const rent = input.rentPerTsubo * store.area * 12 / 10000;
+        const cogs = sales * store.cogs;
+        const labor = sales * store.labor;
+        const other = sales * Math.max(.08, store.other - input.marginBoost);
+        const profit = sales - cogs - labor - rent - other;
+        return { ...store, name: input.names[index], sales, rent, cogs, labor, other, profit, margin: profit / sales };
+      });
+      const ownerCash = rentAnnualTotal - ownerCost - debt;
+      return { input, rows, rentAnnualTotal, buildTotal, loan, debt, ownerCost, ownerCash };
+    }
+
+    function renderTable(data) {
+      const tbody = document.querySelector("#storeTable tbody");
+      tbody.innerHTML = data.rows.map(row => `
+        <tr>
+          <td>${row.name}<br><span class="note">${row.type} / ${row.area}坪</span></td>
+          <td>${yen(row.sales)}</td>
+          <td>${yen(row.cogs)}</td>
+          <td>${yen(row.labor)}</td>
+          <td>${yen(row.rent)}</td>
+          <td>${yen(row.profit)}</td>
+          <td>${pct(row.margin)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function drawChart(data) {
+      const canvas = document.getElementById("profitChart");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, w, h);
+      const max = Math.max(...data.rows.map(r => r.profit), 1);
+      const colors = ["#a64b38", "#355f7c", "#2f6f55"];
+      data.rows.forEach((row, i) => {
+        const barW = Math.max(4, row.profit / max * (w - 220));
+        const y = 70 + i * 86;
+        ctx.fillStyle = "#202326";
+        ctx.font = "24px sans-serif";
+        ctx.fillText(row.name, 24, y);
+        ctx.fillStyle = "#e2e6de";
+        ctx.fillRect(24, y + 16, w - 120, 24);
+        ctx.fillStyle = colors[i];
+        ctx.fillRect(24, y + 16, barW, 24);
+        ctx.fillStyle = "#202326";
+        ctx.font = "22px sans-serif";
+        ctx.fillText(yen(row.profit), w - 170, y + 38);
+      });
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "18px sans-serif";
+      ctx.fillText("年間営業利益", 24, 30);
+    }
+
+    function render() {
+      const data = compute();
+      renderTable(data);
+      drawChart(data);
+      document.getElementById("equityTop").textContent = yen(data.input.equity);
+      document.getElementById("baseRentTop").textContent = `${Math.round(data.rentAnnualTotal / 12).toLocaleString("ja-JP")}万円/月`;
+      document.getElementById("rentCaseBase").textContent = `${Math.round(data.rentAnnualTotal / 12).toLocaleString("ja-JP")}万円/月`;
+      document.getElementById("ownerRevenue").textContent = yen(data.rentAnnualTotal);
+      document.getElementById("ownerCost").textContent = yen(data.ownerCost);
+      document.getElementById("ownerDebt").textContent = yen(data.debt);
+      document.getElementById("ownerCash").textContent = yen(data.ownerCash);
+      document.getElementById("equityYield").textContent = data.input.equity > 0 ? pct(data.ownerCash / data.input.equity) : "N/A";
+      document.getElementById("simSales").textContent = oku(data.rows.reduce((sum, row) => sum + row.sales, 0));
+      document.getElementById("simOwnerCash").textContent = yen(data.ownerCash);
+      document.getElementById("simLoan").textContent = yen(data.loan);
+    }
+
+    document.querySelectorAll("input").forEach(input => input.addEventListener("input", render));
+    render();
+  </script>
+</body>
+</html>
