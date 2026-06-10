@@ -413,18 +413,18 @@
           <label>コーヒー 店舗名<input id="name1" value="街角ロースタリー"></label>
           <label>和菓子 店舗名<input id="name2" value="季節の菓子処"></label>
           <label>自己資金 万円<input id="equity" type="number" min="0" step="100" value="1000"></label>
-          <label>売上倍率<input id="salesFactor" type="number" min="0.5" max="2" step="0.05" value="1"></label>
+          <label>利益倍率<input id="profitMultiple" type="number" min="1" max="5" step="0.5" value="3"></label>
           <label>賃料 坪単価 円/月<input id="rentPerTsubo" type="number" min="8000" max="70000" step="1000" value="21333"></label>
           <label>建築坪単価 万円<input id="buildCost" type="number" min="60" max="180" step="5" value="100"></label>
           <label>利益率補正 %<input id="marginBoost" type="number" min="-10" max="10" step="1" value="0"></label>
         </div>
       </div>
       <div class="grid cols-3" style="margin-top:16px">
-        <div class="card metric"><span>3店舗合計年商</span><strong id="simSales">1.15億円</strong><span>売上倍率で変化</span></div>
+        <div class="card metric"><span>利益ベース評価額</span><strong id="simValuation">3,866万円</strong><span>営業利益 x 利益倍率</span></div>
         <div class="card metric"><span>オーナー年間手残り</span><strong id="simOwnerCash">629万円</strong><span>税前、返済後</span></div>
         <div class="card metric"><span>必要借入</span><strong id="simLoan">4,000万円</strong><span>建築費から自己資金を控除</span></div>
       </div>
-      <p class="note">この部分が後でゲームになります。プレイヤーは店舗名、売上、賃料、建築費、頭金を変更し、テナント満足度、空室リスク、オーナー利回りを見ながら運営判断を体験できます。</p>
+      <p class="note">この部分が後でゲームになります。プレイヤーは店舗名、利益倍率、賃料、建築費、頭金を変更し、店舗評価額、テナント満足度、空室リスク、オーナー利回りを見ながら運営判断を体験できます。飲食店の評価は売上倍率だけでは粗く、営業権1〜3倍、実質営業利益3〜5倍といった利益ベースの見方を優先します。</p>
     </section>
 
     <section>
@@ -482,7 +482,7 @@
       return {
         names: [0, 1, 2].map(i => document.getElementById(`name${i}`).value || stores[i].type),
         equity: Number(document.getElementById("equity").value || 0),
-        salesFactor: Number(document.getElementById("salesFactor").value || 1),
+        profitMultiple: Number(document.getElementById("profitMultiple").value || 3),
         rentPerTsubo: Number(document.getElementById("rentPerTsubo").value || 0),
         buildCost: Number(document.getElementById("buildCost").value || 100),
         marginBoost: Number(document.getElementById("marginBoost").value || 0) / 100
@@ -497,7 +497,7 @@
       const debt = loanPayment(loan, .02, 20);
       const ownerCost = 250 + buildTotal * .006;
       const rows = stores.map((store, index) => {
-        const sales = store.annualSales * input.salesFactor;
+        const sales = store.annualSales;
         const rent = input.rentPerTsubo * store.area * 12 / 10000;
         const cogs = sales * store.cogs;
         const labor = sales * store.labor;
@@ -506,7 +506,9 @@
         return { ...store, name: input.names[index], sales, rent, cogs, labor, other, profit, margin: profit / sales };
       });
       const ownerCash = rentAnnualTotal - ownerCost - debt;
-      return { input, rows, rentAnnualTotal, buildTotal, loan, debt, ownerCost, ownerCash };
+      const totalProfit = rows.reduce((sum, row) => sum + row.profit, 0);
+      const valuation = totalProfit * input.profitMultiple;
+      return { input, rows, rentAnnualTotal, buildTotal, loan, debt, ownerCost, ownerCash, totalProfit, valuation };
     }
 
     function renderTable(data) {
@@ -565,7 +567,7 @@
       document.getElementById("ownerDebt").textContent = yen(data.debt);
       document.getElementById("ownerCash").textContent = yen(data.ownerCash);
       document.getElementById("equityYield").textContent = data.input.equity > 0 ? pct(data.ownerCash / data.input.equity) : "N/A";
-      document.getElementById("simSales").textContent = oku(data.rows.reduce((sum, row) => sum + row.sales, 0));
+      document.getElementById("simValuation").textContent = oku(data.valuation);
       document.getElementById("simOwnerCash").textContent = yen(data.ownerCash);
       document.getElementById("simLoan").textContent = yen(data.loan);
     }

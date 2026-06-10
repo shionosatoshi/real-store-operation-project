@@ -253,8 +253,8 @@
         <strong id="topEquity">1,000万円</strong>
       </div>
       <div class="card metric">
-        <span>3店舗合計年商</span>
-        <strong id="topSales">1.15億円</strong>
+        <span>利益ベース評価額</span>
+        <strong id="topValuation">3,866万円</strong>
       </div>
       <div class="card metric">
         <span>オーナー手残り</span>
@@ -283,8 +283,8 @@
         <label>自己資金 万円
           <input id="equity" type="number" min="0" step="100" value="1000">
         </label>
-        <label>売上倍率
-          <input id="salesFactor" type="number" min="0.5" max="2" step="0.05" value="1">
+        <label>利益倍率
+          <input id="profitMultiple" type="number" min="1" max="5" step="0.5" value="3">
         </label>
         <label>賃料 坪単価 円/月
           <input id="rentPerTsubo" type="number" min="8000" max="70000" step="1000" value="21333">
@@ -299,11 +299,11 @@
           <strong id="loan">4,000万円</strong>
         </div>
         <div class="metric">
-          <span>月額賃料</span>
-          <strong id="monthlyRent">96万円</strong>
+          <span>営業利益合計</span>
+          <strong id="totalProfit">1,289万円</strong>
         </div>
       </div>
-      <p class="small">これは共有用の簡易デモです。詳細版では店舗名や利益率補正も変更できます。</p>
+      <p class="small">飲食店の概算評価は、売上倍率よりも利益倍率で見る方が実態に近くなります。ここでは営業権1〜3倍、実質営業利益3〜5倍の考え方を参考に、1〜5倍で動かせるようにしています。</p>
     </section>
 
     <section class="card">
@@ -359,7 +359,7 @@
 
     function compute() {
       const equity = inputValue("equity");
-      const salesFactor = inputValue("salesFactor") || 1;
+      const profitMultiple = inputValue("profitMultiple") || 3;
       const rentPerTsubo = inputValue("rentPerTsubo");
       const buildCost = inputValue("buildCost");
       const rentAnnualTotal = rentPerTsubo * area * 12 / 10000;
@@ -368,7 +368,7 @@
       const debt = loanPayment(loan, .02, 20);
       const ownerCost = 250 + buildTotal * .006;
       const rows = stores.map(store => {
-        const sales = store.annualSales * salesFactor;
+        const sales = store.annualSales;
         const rent = rentPerTsubo * store.area * 12 / 10000;
         const profit = sales - sales * store.cogs - sales * store.labor - sales * store.other - rent;
         return { ...store, sales, rent, profit, margin: profit / sales };
@@ -377,19 +377,20 @@
         equity,
         rows,
         loan,
-        monthlyRent: rentAnnualTotal / 12,
         ownerCash: rentAnnualTotal - ownerCost - debt,
-        totalSales: rows.reduce((sum, row) => sum + row.sales, 0)
+        totalSales: rows.reduce((sum, row) => sum + row.sales, 0),
+        totalProfit: rows.reduce((sum, row) => sum + row.profit, 0),
+        valuation: rows.reduce((sum, row) => sum + row.profit, 0) * profitMultiple
       };
     }
 
     function render() {
       const data = compute();
       document.getElementById("topEquity").textContent = yen(data.equity);
-      document.getElementById("topSales").textContent = oku(data.totalSales);
+      document.getElementById("topValuation").textContent = oku(data.valuation);
       document.getElementById("topCash").textContent = `${yen(data.ownerCash)}/年`;
       document.getElementById("loan").textContent = yen(data.loan);
-      document.getElementById("monthlyRent").textContent = yen(data.monthlyRent);
+      document.getElementById("totalProfit").textContent = yen(data.totalProfit);
 
       const maxProfit = Math.max(...data.rows.map(row => row.profit), 1);
       document.getElementById("stores").innerHTML = data.rows.map(row => `
