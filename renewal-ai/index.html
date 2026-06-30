@@ -1,0 +1,1431 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>更新コンパスAI | 更新条件最適化デモ</title>
+  <meta name="description" content="管理会社向けに、更新時の賃料・契約条件の見直しを根拠とリスク付きで支援するAIデモ。">
+  <style>
+    :root {
+      --ink: #1d2522;
+      --muted: #64716b;
+      --line: #dbe3df;
+      --paper: #f7f8f5;
+      --panel: #ffffff;
+      --green: #2f6f55;
+      --green-soft: #e7f2ec;
+      --blue: #285f8f;
+      --blue-soft: #e8f0f8;
+      --red: #b44b3e;
+      --red-soft: #fff0ed;
+      --amber: #b8802c;
+      --amber-soft: #fff4df;
+      --charcoal: #101817;
+      --shadow: 0 18px 48px rgba(20, 32, 28, .10);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.65;
+      letter-spacing: 0;
+    }
+
+    a { color: inherit; }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .hero {
+      min-height: 92vh;
+      display: grid;
+      align-items: end;
+      padding: 28px 22px 56px;
+      color: #fff;
+      background:
+        linear-gradient(180deg, rgba(9, 16, 15, .20), rgba(9, 16, 15, .88)),
+        url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=82") center / cover;
+    }
+
+    .hero-inner,
+    .shell {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: absolute;
+      inset: 0 0 auto 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: min(1180px, calc(100% - 44px));
+      margin: 18px auto 0;
+      color: #fff;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .16);
+      border: 1px solid rgba(255, 255, 255, .28);
+    }
+
+    .nav {
+      display: flex;
+      gap: 16px;
+      color: rgba(255, 255, 255, .86);
+      font-size: 14px;
+    }
+
+    .nav a {
+      text-decoration: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 18px;
+      padding: 6px 10px;
+      border: 1px solid rgba(255, 255, 255, .36);
+      border-radius: 999px;
+      background: rgba(0, 0, 0, .18);
+      color: rgba(255, 255, 255, .90);
+      font-size: 13px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 860px;
+      margin-bottom: 18px;
+      font-size: 56px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .hero-lead {
+      max-width: 720px;
+      margin-bottom: 26px;
+      color: rgba(255, 255, 255, .90);
+      font-size: 19px;
+    }
+
+    .hero-actions,
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      text-decoration: none;
+      font-weight: 800;
+      line-height: 1.2;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, .14);
+    }
+
+    .btn.primary {
+      background: #ffffff;
+      color: var(--charcoal);
+    }
+
+    .btn.secondary {
+      border-color: rgba(255, 255, 255, .38);
+      background: rgba(255, 255, 255, .10);
+      color: #fff;
+    }
+
+    .btn.solid {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .btn.ghost {
+      border-color: var(--line);
+      background: var(--panel);
+      color: var(--ink);
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 850px;
+      margin-top: 38px;
+    }
+
+    .hero-metric {
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, .18);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .11);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-metric strong {
+      display: block;
+      font-size: 26px;
+      line-height: 1.15;
+    }
+
+    .hero-metric span {
+      color: rgba(255, 255, 255, .78);
+      font-size: 12px;
+    }
+
+    main {
+      padding: 30px 20px 78px;
+    }
+
+    section {
+      margin: 54px 0;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 420px);
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      font-size: 34px;
+      line-height: 1.22;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 18px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .lede {
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .card,
+    .panel,
+    .source-list {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .card,
+    .panel {
+      padding: 18px;
+    }
+
+    .card p,
+    .panel p {
+      color: var(--muted);
+    }
+
+    .stat {
+      display: grid;
+      gap: 4px;
+    }
+
+    .stat strong {
+      font-size: 31px;
+      line-height: 1.1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      margin-bottom: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      color: var(--green);
+      background: var(--green-soft);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .pill.blue {
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .pill.red {
+      color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .pill.amber {
+      color: #815612;
+      background: var(--amber-soft);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .app-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .app button {
+      border: 0;
+    }
+
+    .small-button {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .small-button.neutral {
+      background: #edf1ef;
+      color: var(--ink);
+    }
+
+    .unit-list {
+      display: grid;
+      gap: 8px;
+      max-height: 430px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .unit-card {
+      width: 100%;
+      display: grid;
+      gap: 6px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      text-align: left;
+      color: var(--ink);
+    }
+
+    .unit-card[aria-current="true"] {
+      border-color: var(--green);
+      box-shadow: inset 0 0 0 1px var(--green);
+    }
+
+    .unit-card strong {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      line-height: 1.3;
+    }
+
+    .unit-card span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .unit-card mark {
+      border-radius: 999px;
+      padding: 2px 7px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input[type="number"],
+    input[type="file"],
+    select {
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--green);
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f0f3f1;
+    }
+
+    .segment {
+      min-height: 34px;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .segment.active {
+      background: var(--panel);
+      color: var(--green);
+      box-shadow: 0 4px 12px rgba(20, 32, 28, .08);
+    }
+
+    .score-panel {
+      display: grid;
+      gap: 12px;
+    }
+
+    .score-main {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .score {
+      padding: 12px;
+      border-radius: 8px;
+      background: #f5f7f4;
+      border: 1px solid var(--line);
+    }
+
+    .score strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .score span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .bar {
+      height: 9px;
+      border-radius: 999px;
+      background: #e1e7e3;
+      overflow: hidden;
+    }
+
+    .bar i {
+      display: block;
+      width: var(--w, 0%);
+      height: 100%;
+      background: var(--green);
+    }
+
+    .bar.risk i { background: var(--red); }
+    .bar.legal i { background: var(--amber); }
+
+    .scenario-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .scenario-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .scenario-card.recommended {
+      border-color: var(--green);
+      box-shadow: inset 0 0 0 1px var(--green);
+    }
+
+    .scenario-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 900;
+    }
+
+    .scenario-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .document-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .doc-tab {
+      min-height: 34px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: #edf1ef;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .doc-tab.active {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .doc-output {
+      min-height: 260px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfa;
+      white-space: pre-wrap;
+      font-size: 14px;
+      color: #2c3431;
+    }
+
+    .warning {
+      padding: 14px;
+      border-left: 5px solid var(--red);
+      border-radius: 8px;
+      background: var(--red-soft);
+      color: #613029;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .flow-step {
+      position: relative;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .flow-step b {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      margin-bottom: 12px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--green);
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .compare-table th,
+    .compare-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .compare-table th {
+      background: #eef3f0;
+      color: #31423b;
+    }
+
+    .compare-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .source-list {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .source-item {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr);
+      gap: 16px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .source-item:last-child {
+      border-bottom: 0;
+    }
+
+    .source-item b {
+      color: var(--green);
+    }
+
+    .source-item a {
+      color: var(--blue);
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      padding: 32px 20px 42px;
+      border-top: 1px solid var(--line);
+      background: #eef2ef;
+      color: var(--muted);
+    }
+
+    .footer-inner {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px !important;
+      min-height: 0 !important;
+      height: 1px !important;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    @media (max-width: 980px) {
+      h1 { font-size: 42px; }
+      h2 { font-size: 28px; }
+
+      .section-head,
+      .app,
+      .demo-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cols-3,
+      .cols-2,
+      .flow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .unit-list {
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .hero {
+        min-height: 88vh;
+        padding: 92px 16px 42px;
+      }
+
+      .topbar {
+        width: calc(100% - 32px);
+      }
+
+      .nav {
+        display: none;
+      }
+
+      h1 { font-size: 34px; }
+      .hero-lead { font-size: 16px; }
+
+      .hero-metrics,
+      .cols-3,
+      .cols-2,
+      .flow,
+      .form-grid,
+      .score-main,
+      .scenario-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .source-item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="topbar" aria-label="サイトナビゲーション">
+      <div class="brand">
+        <span class="brand-mark"><i data-lucide="compass" aria-hidden="true"></i></span>
+        <span>更新コンパスAI</span>
+      </div>
+      <nav class="nav">
+        <a href="#demo">デモ</a>
+        <a href="#market">市場</a>
+        <a href="#positioning">設計</a>
+        <a href="#sources">出典</a>
+      </nav>
+    </div>
+
+    <div class="hero-inner">
+      <p class="eyebrow"><i data-lucide="building-2" aria-hidden="true"></i>管理会社向け 更新条件最適化デモ</p>
+      <h1>更新時の賃料・契約条件を、説明できる判断に変える。</h1>
+      <p class="hero-lead">相場差、更新期限、入居者リスク、契約条件をもとに、オーナー提案・入居者説明・社内確認メモをまとめて作る意思決定支援AIのサンプルです。</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#demo"><i data-lucide="play" aria-hidden="true"></i>90秒デモを開く</a>
+        <a class="btn secondary" href="./sample-renewals.csv" download><i data-lucide="download" aria-hidden="true"></i>サンプルCSV</a>
+      </div>
+      <div class="hero-metrics" aria-label="市場の前提">
+        <div class="hero-metric">
+          <strong>1,568万戸</strong>
+          <span>民営借家ストックの目安</span>
+        </div>
+        <div class="hero-metric">
+          <strong>約780万件</strong>
+          <span>2年更新仮定の年間更新イベント試算</span>
+        </div>
+        <div class="hero-metric">
+          <strong>9,881社</strong>
+          <span>令和6年度末の登録賃貸住宅管理業者</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="shell">
+      <section id="demo" aria-labelledby="demo-title">
+        <div class="section-head">
+          <div>
+            <p class="pill"><i data-lucide="wand-sparkles" aria-hidden="true"></i>インタラクティブデモ</p>
+            <h2 id="demo-title">CSVから更新候補を抽出し、合意形成シナリオを比較</h2>
+          </div>
+          <p class="lede">このデモはブラウザ内だけで動作します。CSVや入力値は外部送信されません。</p>
+        </div>
+
+        <div class="app">
+          <aside class="panel" aria-label="更新候補リスト">
+            <div class="app-toolbar">
+              <button class="small-button" type="button" id="loadSample"><i data-lucide="file-spreadsheet" aria-hidden="true"></i>サンプル読込</button>
+              <label class="small-button neutral" for="csvInput">
+                <i data-lucide="upload" aria-hidden="true"></i>CSV取込
+              </label>
+              <input class="visually-hidden" id="csvInput" type="file" accept=".csv,text/csv">
+            </div>
+            <p class="note">対象は更新まで120日以内の住戸を優先表示しています。</p>
+            <div class="unit-list" id="unitList"></div>
+          </aside>
+
+          <div class="grid">
+            <div class="demo-grid">
+              <section class="panel" aria-label="住戸条件">
+                <h3 id="selectedTitle">住戸条件</h3>
+                <div class="form-grid">
+                  <label>現行賃料
+                    <input id="currentRent" type="number" min="30000" step="1000">
+                  </label>
+                  <label>周辺相場
+                    <input id="marketRent" type="number" min="30000" step="1000">
+                  </label>
+                  <label>更新までの日数
+                    <input id="renewalDays" type="number" min="0" max="240">
+                  </label>
+                  <label>入居年数
+                    <input id="tenureYears" type="number" min="0" max="30" step="0.5">
+                  </label>
+                  <label>駅徒歩
+                    <input id="stationMin" type="number" min="1" max="40">
+                  </label>
+                  <label>築年数
+                    <input id="buildingAge" type="number" min="0" max="80">
+                  </label>
+                </div>
+                <div style="margin-top:12px">
+                  <label>提案姿勢
+                    <div class="segmented" role="group" aria-label="提案姿勢">
+                      <button class="segment" type="button" data-mode="conservative">慎重</button>
+                      <button class="segment active" type="button" data-mode="balanced">標準</button>
+                      <button class="segment" type="button" data-mode="active">積極</button>
+                    </div>
+                  </label>
+                </div>
+              </section>
+
+              <aside class="panel score-panel" aria-label="判定サマリー">
+                <h3>判定サマリー</h3>
+                <div class="score-main">
+                  <div class="score">
+                    <strong id="gapPct">0%</strong>
+                    <span>相場乖離</span>
+                  </div>
+                  <div class="score">
+                    <strong id="agreeScore">0%</strong>
+                    <span>合意見込み</span>
+                  </div>
+                  <div class="score">
+                    <strong id="deltaRent">0円</strong>
+                    <span>推奨改定幅</span>
+                  </div>
+                </div>
+                <div>
+                  <p class="note">退去リスク</p>
+                  <div class="bar risk"><i id="vacancyBar"></i></div>
+                </div>
+                <div>
+                  <p class="note">法務・運用注意度</p>
+                  <div class="bar legal"><i id="legalBar"></i></div>
+                </div>
+                <div class="warning" id="riskNote"></div>
+              </aside>
+            </div>
+
+            <section class="panel" aria-label="シナリオ比較">
+              <div class="section-head" style="grid-template-columns:1fr auto;margin-bottom:10px">
+                <div>
+                  <h3>3つの更新シナリオ</h3>
+                  <p class="note">最大値上げ額ではなく、増収・合意見込み・退去リスクのバランスで比較します。</p>
+                </div>
+                <button class="small-button neutral" type="button" id="copySummary"><i data-lucide="copy" aria-hidden="true"></i>要約コピー</button>
+              </div>
+              <div class="scenario-grid" id="scenarioGrid"></div>
+            </section>
+
+            <section class="panel" aria-label="生成文面">
+              <div class="section-head" style="grid-template-columns:1fr auto;margin-bottom:10px">
+                <div>
+                  <h3>提案書・通知文・交渉メモ</h3>
+                  <p class="note">送付前に社内審査と専門家確認を通す想定のドラフトです。</p>
+                </div>
+                <button class="small-button neutral" type="button" id="copyDoc"><i data-lucide="clipboard" aria-hidden="true"></i>文面コピー</button>
+              </div>
+              <div class="document-tabs" role="tablist" aria-label="文面種別">
+                <button class="doc-tab active" type="button" data-doc="owner">オーナー向け</button>
+                <button class="doc-tab" type="button" data-doc="resident">入居者向け</button>
+                <button class="doc-tab" type="button" data-doc="memo">交渉メモ</button>
+              </div>
+              <div class="doc-output" id="docOutput"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section id="market" aria-labelledby="market-title">
+        <div class="section-head">
+          <div>
+            <p class="pill blue"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i>市場の見立て</p>
+            <h2 id="market-title">「更新料アップ」では狭い。更新業務全体ならSaaSになる。</h2>
+          </div>
+          <p class="lede">共有会話の結論を、営業時に説明しやすい論点へ再構成しています。</p>
+        </div>
+
+        <div class="grid cols-3">
+          <article class="card stat">
+            <span>民営借家</span>
+            <strong>1,568万戸</strong>
+            <p>住宅・土地統計調査の民営借家ストック。2年更新を置くと、毎年の更新候補は大きい。</p>
+          </article>
+          <article class="card stat">
+            <span>主要買い手</span>
+            <strong>約1万社</strong>
+            <p>登録賃貸住宅管理業者を中心に、管理戸数500から5,000戸の中小・中堅会社を初期対象にする。</p>
+          </article>
+          <article class="card stat">
+            <span>直接市場</span>
+            <strong>数億-30億円</strong>
+            <p>管理会社3,000社が月3万円で年10.8億円、5,000社が月5万円で年30億円という試算。</p>
+          </article>
+        </div>
+
+        <div class="grid cols-2" style="margin-top:14px">
+          <article class="card">
+            <span class="pill amber"><i data-lucide="map" aria-hidden="true"></i>地域差</span>
+            <h3>更新料そのものは地域差が大きい</h3>
+            <p>国交省の2007年調査では、更新料徴収割合は神奈川90.1%、千葉82.9%、東京65.0%の一方、大阪・兵庫は0%。全国向けに「更新料」だけで売ると刺さらない地域が出ます。</p>
+          </article>
+          <article class="card">
+            <span class="pill red"><i data-lucide="scale" aria-hidden="true"></i>法務・反発</span>
+            <h3>一方的な値上げに見える訴求は危険</h3>
+            <p>賃料変更は貸主・借主双方の合意が基本です。AIは「上げる装置」ではなく、根拠整理と人間の最終判断を支援する設計にする必要があります。</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="positioning" aria-labelledby="positioning-title">
+        <div class="section-head">
+          <div>
+            <p class="pill"><i data-lucide="route" aria-hidden="true"></i>プロダクト設計</p>
+            <h2 id="positioning-title">差別化は、査定額ではなく「合意形成の運用」に置く</h2>
+          </div>
+          <p class="lede">競合はすでに賃料査定やレポート作成に入っています。勝ち筋は更新カレンダー、説明文、リスク管理、レビュー履歴をまとめることです。</p>
+        </div>
+
+        <div class="flow">
+          <div class="flow-step">
+            <b>1</b>
+            <h3>更新候補抽出</h3>
+            <p>90から120日以内に更新を迎える住戸を、CSVまたは管理システム連携で拾う。</p>
+          </div>
+          <div class="flow-step">
+            <b>2</b>
+            <h3>条件シミュレーション</h3>
+            <p>相場乖離、入居年数、滞納履歴、退去損失を見て複数案を比較する。</p>
+          </div>
+          <div class="flow-step">
+            <b>3</b>
+            <h3>説明資料生成</h3>
+            <p>オーナー提案、入居者通知、電話トーク、反論時回答を同じ根拠で作る。</p>
+          </div>
+          <div class="flow-step">
+            <b>4</b>
+            <h3>人間レビュー</h3>
+            <p>法務・運用注意点を見ながら担当者が最終判断し、履歴を残す。</p>
+          </div>
+        </div>
+
+        <div style="margin-top:18px; overflow:auto">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>打ち出し方</th>
+                <th>見え方</th>
+                <th>採用判断</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>更新料を上げるAI</td>
+                <td>狭い、地域差が大きい、入居者不利の印象が強い</td>
+                <td>避ける</td>
+              </tr>
+              <tr>
+                <td>家賃値上げAI</td>
+                <td>炎上・法務リスクが高く、管理会社が売りにくい</td>
+                <td>避ける</td>
+              </tr>
+              <tr>
+                <td>更新条件最適化AI</td>
+                <td>相場根拠、合意見込み、退去抑制、説明責任を扱える</td>
+                <td>採用</td>
+              </tr>
+              <tr>
+                <td>更新提案CRM</td>
+                <td>査定だけでなく、提案・交渉・承認履歴まで業務に入れる</td>
+                <td>拡張候補</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section aria-labelledby="competitors-title">
+        <div class="section-head">
+          <div>
+            <p class="pill blue"><i data-lucide="search-check" aria-hidden="true"></i>競合整理</p>
+            <h2 id="competitors-title">既存プレイヤーは賃料査定と資料作成に強い</h2>
+          </div>
+          <p class="lede">このデモでは、競合が押さえる「査定」ではなく、更新交渉の実務フローに寄せています。</p>
+        </div>
+
+        <div class="grid cols-3">
+          <article class="card">
+            <h3>スマサテ</h3>
+            <p>AI賃料査定、査定書作成、賃料改定通知書作成機能βなど。直接競合に近い。</p>
+          </article>
+          <article class="card">
+            <h3>オーナー提案AIロボII</h3>
+            <p>賃料査定、空室対策、満室戦略レポート。月1万円からの価格帯も出ている。</p>
+          </article>
+          <article class="card">
+            <h3>ちんさてくん連携</h3>
+            <p>GMO賃貸DX オーナーアプリとの連携で、査定から提案資料作成へ入っている。</p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="pricing-title">
+        <div class="section-head">
+          <div>
+            <p class="pill amber"><i data-lucide="badge-yen" aria-hidden="true"></i>価格仮説</p>
+            <h2 id="pricing-title">査定だけで売らず、更新業務の月次運用として売る</h2>
+          </div>
+          <p class="lede">初期ターゲットは東京・神奈川・千葉・埼玉の管理戸数500から5,000戸規模。</p>
+        </div>
+
+        <div class="grid cols-3">
+          <article class="card">
+            <h3>小規模</h3>
+            <p><strong>月3万-5万円</strong></p>
+            <p>CSV取り込み、候補抽出、提案ドラフト、基本リスク表示。</p>
+          </article>
+          <article class="card">
+            <h3>中堅</h3>
+            <p><strong>月8万-20万円</strong></p>
+            <p>承認フロー、文面テンプレート、更新カレンダー、担当者別進捗。</p>
+          </article>
+          <article class="card">
+            <h3>連携あり</h3>
+            <p><strong>月30万円以上</strong></p>
+            <p>管理システム連携、権限管理、監査ログ、カスタム帳票。</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="sources" aria-labelledby="sources-title">
+        <div class="section-head">
+          <div>
+            <p class="pill"><i data-lucide="book-open-check" aria-hidden="true"></i>出典・前提</p>
+            <h2 id="sources-title">公開時に突っ込まれやすい数字はリンク付きで残す</h2>
+          </div>
+          <p class="lede">市場規模の一部は、公式統計とSaaS単価からの試算です。</p>
+        </div>
+
+        <div class="source-list">
+          <div class="source-item">
+            <b>住宅ストック</b>
+            <span>総務省統計局「令和5年住宅・土地統計調査」借家1,946.2万戸、民営借家1,568.4万戸。<br><a href="https://www.stat.go.jp/data/jyutaku/2023/pdf/kihon_gaiyou.pdf" target="_blank" rel="noopener">https://www.stat.go.jp/data/jyutaku/2023/pdf/kihon_gaiyou.pdf</a></span>
+          </div>
+          <div class="source-item">
+            <b>管理業者数</b>
+            <span>国土交通省「令和6年度 賃貸住宅管理業者等への全国一斉立入検査結果」登録数9,881社。<br><a href="https://www.mlit.go.jp/report/press/content/001888877.pdf" target="_blank" rel="noopener">https://www.mlit.go.jp/report/press/content/001888877.pdf</a></span>
+          </div>
+          <div class="source-item">
+            <b>更新料地域差</b>
+            <span>国土交通省「民間賃貸住宅に係る実態調査」2007年。地域差の参考として使用。<br><a href="https://www.mlit.go.jp/kisha/kisha07/07/070629_3/02.pdf" target="_blank" rel="noopener">https://www.mlit.go.jp/kisha/kisha07/07/070629_3/02.pdf</a></span>
+          </div>
+          <div class="source-item">
+            <b>賃料変更の注意</b>
+            <span>東京都住宅政策本部、東京くらしWEB、国民生活センターの注意喚起を参照。<br><a href="https://www.juutakuseisaku.metro.tokyo.lg.jp/fudosan/chinryouneage" target="_blank" rel="noopener">東京都住宅政策本部</a> / <a href="https://www.shouhiseikatu.metro.tokyo.lg.jp/sodan/kinkyu/20260303.html" target="_blank" rel="noopener">東京くらしWEB</a> / <a href="https://www.kokusen.go.jp/wko/pdf/wko-202509_07.pdf" target="_blank" rel="noopener">国民生活センターPDF</a></span>
+          </div>
+          <div class="source-item">
+            <b>競合</b>
+            <span>スマサテ、オーナー提案AIロボII、GMO賃貸DXとちんさてくんの公開情報。<br><a href="https://prtimes.jp/main/html/rd/p/000000022.000017292.html" target="_blank" rel="noopener">スマサテ機能β</a> / <a href="https://www.n-create.co.jp/pr/news/260421-product/" target="_blank" rel="noopener">日本情報クリエイト</a> / <a href="https://gmoretech.com/news20260323/" target="_blank" rel="noopener">GMO ReTech</a></span>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="safety-title">
+        <div class="warning">
+          <h2 id="safety-title">安全な見せ方の注意</h2>
+          <p>本ページの提案は参考情報であり、法務判断や最終的な賃料・契約条件の決定を代替しません。入居者へ送付する文面は、管理会社の社内ルール、契約条項、地域慣行、専門家確認を通したうえで使用してください。</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <strong>更新コンパスAI</strong>
+      <p>共有用プロトタイプ。CSV取り込みとシミュレーションはブラウザ内で完結します。</p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script>
+    const sampleUnits = [
+      { unit: "A-301", property: "青山レジデンス", area: "東京都港区", layout: "1LDK", size_sqm: 42, current_rent: 168000, market_rent: 181000, station_min: 5, building_age: 9, renewal_days: 93, tenure_years: 2.0, arrears: 0, renewal_fee_months: 1.0 },
+      { unit: "B-805", property: "武蔵小杉テラス", area: "神奈川県川崎市", layout: "2LDK", size_sqm: 58, current_rent: 196000, market_rent: 214000, station_min: 6, building_age: 11, renewal_days: 108, tenure_years: 4.5, arrears: 0, renewal_fee_months: 1.0 },
+      { unit: "C-102", property: "浦和グリーンコート", area: "埼玉県さいたま市", layout: "1K", size_sqm: 26, current_rent: 76000, market_rent: 79000, station_min: 11, building_age: 18, renewal_days: 87, tenure_years: 6.0, arrears: 0, renewal_fee_months: 0.5 },
+      { unit: "D-607", property: "船橋ベイサイド", area: "千葉県船橋市", layout: "1LDK", size_sqm: 38, current_rent: 112000, market_rent: 126000, station_min: 8, building_age: 14, renewal_days: 116, tenure_years: 1.8, arrears: 1, renewal_fee_months: 1.0 },
+      { unit: "E-403", property: "西荻北ハイツ", area: "東京都杉並区", layout: "2DK", size_sqm: 47, current_rent: 132000, market_rent: 139000, station_min: 13, building_age: 24, renewal_days: 72, tenure_years: 9.0, arrears: 0, renewal_fee_months: 1.0 }
+    ];
+
+    const state = {
+      units: [...sampleUnits],
+      selected: 0,
+      mode: "balanced",
+      doc: "owner",
+      latest: null
+    };
+
+    const yen = value => `${Math.round(value).toLocaleString("ja-JP")}円`;
+    const pct = value => `${Math.round(value)}%`;
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+    const roundThousand = value => Math.round(value / 1000) * 1000;
+
+    const els = {
+      unitList: document.getElementById("unitList"),
+      selectedTitle: document.getElementById("selectedTitle"),
+      currentRent: document.getElementById("currentRent"),
+      marketRent: document.getElementById("marketRent"),
+      renewalDays: document.getElementById("renewalDays"),
+      tenureYears: document.getElementById("tenureYears"),
+      stationMin: document.getElementById("stationMin"),
+      buildingAge: document.getElementById("buildingAge"),
+      gapPct: document.getElementById("gapPct"),
+      agreeScore: document.getElementById("agreeScore"),
+      deltaRent: document.getElementById("deltaRent"),
+      vacancyBar: document.getElementById("vacancyBar"),
+      legalBar: document.getElementById("legalBar"),
+      riskNote: document.getElementById("riskNote"),
+      scenarioGrid: document.getElementById("scenarioGrid"),
+      docOutput: document.getElementById("docOutput")
+    };
+
+    function normalize(row) {
+      return {
+        unit: row.unit || row["住戸"] || "未設定",
+        property: row.property || row["物件名"] || "サンプル物件",
+        area: row.area || row["エリア"] || "東京都",
+        layout: row.layout || row["間取り"] || "1LDK",
+        size_sqm: Number(row.size_sqm || row["面積"] || 40),
+        current_rent: Number(row.current_rent || row["現行賃料"] || 120000),
+        market_rent: Number(row.market_rent || row["周辺相場"] || 130000),
+        station_min: Number(row.station_min || row["駅徒歩"] || 8),
+        building_age: Number(row.building_age || row["築年数"] || 12),
+        renewal_days: Number(row.renewal_days || row["更新までの日数"] || 100),
+        tenure_years: Number(row.tenure_years || row["入居年数"] || 3),
+        arrears: Number(row.arrears || row["滞納"] || 0),
+        renewal_fee_months: Number(row.renewal_fee_months || row["更新料月数"] || 1)
+      };
+    }
+
+    function parseCsv(text) {
+      const lines = text.trim().split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) return [];
+      const headers = lines[0].split(",").map(h => h.trim());
+      return lines.slice(1).map(line => {
+        const cells = line.split(",").map(cell => cell.trim());
+        const row = {};
+        headers.forEach((header, index) => row[header] = cells[index] || "");
+        return normalize(row);
+      });
+    }
+
+    function currentUnit() {
+      const base = state.units[state.selected] || state.units[0];
+      return {
+        ...base,
+        current_rent: Number(els.currentRent.value || base.current_rent),
+        market_rent: Number(els.marketRent.value || base.market_rent),
+        renewal_days: Number(els.renewalDays.value || base.renewal_days),
+        tenure_years: Number(els.tenureYears.value || base.tenure_years),
+        station_min: Number(els.stationMin.value || base.station_min),
+        building_age: Number(els.buildingAge.value || base.building_age)
+      };
+    }
+
+    function modeFactor() {
+      return { conservative: 0.28, balanced: 0.42, active: 0.56 }[state.mode] || 0.42;
+    }
+
+    function analyze(unit) {
+      const gap = Math.max(0, unit.market_rent - unit.current_rent);
+      const gapPct = unit.current_rent ? (gap / unit.current_rent) * 100 : 0;
+      const rawDelta = gapPct < 2.5 ? 0 : roundThousand(gap * modeFactor());
+      const delta = clamp(rawDelta, 0, Math.max(0, roundThousand(gap * 0.72)));
+      const increasePct = unit.current_rent ? (delta / unit.current_rent) * 100 : 0;
+
+      let vacancyRisk = 18 + increasePct * 6 - gapPct * 1.2;
+      if (unit.arrears) vacancyRisk += 12;
+      if (unit.tenure_years >= 7) vacancyRisk += 8;
+      if (unit.station_min <= 7) vacancyRisk -= 4;
+      if (unit.renewal_days < 60) vacancyRisk += 8;
+      vacancyRisk = clamp(vacancyRisk, 8, 86);
+
+      let legalRisk = 18;
+      if (gapPct < 3 && delta > 0) legalRisk += 22;
+      if (increasePct > 5) legalRisk += 18;
+      if (increasePct > 8) legalRisk += 14;
+      if (unit.renewal_fee_months >= 1.5) legalRisk += 10;
+      if (unit.renewal_days < 60) legalRisk += 8;
+      legalRisk = clamp(legalRisk, 10, 88);
+
+      const agree = clamp(90 - increasePct * 7 - vacancyRisk * 0.20 - legalRisk * 0.16 + Math.min(gapPct, 10), 34, 94);
+      const expected = Math.max(0, Math.round(delta * 24 * (agree / 100) - unit.current_rent * (vacancyRisk / 100) * 1.2));
+      const shouldWait = gapPct < 3 || legalRisk > 62 || vacancyRisk > 64;
+
+      const scenarios = [
+        {
+          key: "hold",
+          title: "据え置き",
+          summary: "退去リスクを抑え、今回は関係維持を優先する。",
+          delta: 0,
+          agree: clamp(94 - (unit.arrears ? 4 : 0), 70, 96),
+          risk: clamp(vacancyRisk - 22, 5, 60),
+          expected: 0
+        },
+        {
+          key: "balanced",
+          title: "説明付き改定",
+          summary: "相場根拠を添えて、現実的な範囲で月額賃料を見直す。",
+          delta,
+          agree,
+          risk: vacancyRisk,
+          expected
+        },
+        {
+          key: "wait",
+          title: "退去時再募集",
+          summary: "現入居者には据え置き、退去時に募集賃料を相場へ寄せる。",
+          delta: 0,
+          agree: 92,
+          risk: clamp(vacancyRisk - 12, 8, 70),
+          expected: Math.round(gap * 18 * 0.55)
+        }
+      ];
+
+      let recommended = "balanced";
+      if (shouldWait) recommended = gapPct < 2.5 ? "hold" : "wait";
+      if (delta === 0) recommended = "hold";
+
+      return { gap, gapPct, delta, increasePct, vacancyRisk, legalRisk, agree, expected, scenarios, recommended };
+    }
+
+    function setInputs(unit) {
+      els.currentRent.value = unit.current_rent;
+      els.marketRent.value = unit.market_rent;
+      els.renewalDays.value = unit.renewal_days;
+      els.tenureYears.value = unit.tenure_years;
+      els.stationMin.value = unit.station_min;
+      els.buildingAge.value = unit.building_age;
+    }
+
+    function renderUnits() {
+      const sorted = state.units
+        .map((unit, index) => ({ unit, index }))
+        .sort((a, b) => a.unit.renewal_days - b.unit.renewal_days);
+
+      els.unitList.innerHTML = sorted.map(({ unit, index }) => {
+        const gap = unit.market_rent - unit.current_rent;
+        const label = unit.renewal_days <= 120 ? "更新候補" : "監視";
+        return `
+          <button class="unit-card" type="button" data-index="${index}" aria-current="${index === state.selected}">
+            <strong>${unit.property} ${unit.unit}<mark>${label}</mark></strong>
+            <span>${unit.area} / ${unit.layout} / 更新まで${unit.renewal_days}日</span>
+            <span>現行 ${yen(unit.current_rent)} / 相場差 ${yen(gap)}</span>
+          </button>
+        `;
+      }).join("");
+
+      document.querySelectorAll(".unit-card").forEach(button => {
+        button.addEventListener("click", () => {
+          state.selected = Number(button.dataset.index);
+          setInputs(state.units[state.selected]);
+          render();
+        });
+      });
+    }
+
+    function renderScenario(analysis) {
+      els.scenarioGrid.innerHTML = analysis.scenarios.map(item => `
+        <article class="scenario-card ${item.key === analysis.recommended ? "recommended" : ""}">
+          <div class="scenario-title">
+            <span>${item.title}</span>
+            ${item.key === analysis.recommended ? "<span class=\"pill\">推奨</span>" : ""}
+          </div>
+          <p>${item.summary}</p>
+          <div class="scenario-meta">
+            <span>改定幅<br><strong>${item.delta > 0 ? "+" : ""}${yen(item.delta)}</strong></span>
+            <span>合意見込み<br><strong>${pct(item.agree)}</strong></span>
+            <span>24ヶ月期待値<br><strong>${yen(item.expected)}</strong></span>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function makeDocuments(unit, analysis) {
+      const rec = analysis.scenarios.find(s => s.key === analysis.recommended);
+      const deltaText = rec.delta > 0 ? `月額${yen(rec.delta)}の改定` : "今回は賃料据え置き";
+      const marketGap = yen(analysis.gap);
+      return {
+        owner: `${unit.property} ${unit.unit} 更新提案ドラフト\n\n現行賃料は${yen(unit.current_rent)}、周辺相場の参考値は${yen(unit.market_rent)}です。相場差は${marketGap}、乖離率は約${pct(analysis.gapPct)}です。\n\n推奨案は「${rec.title}」です。${deltaText}を前提に、合意見込みは約${pct(rec.agree)}、退去リスクは${pct(rec.risk)}として扱います。\n\n提案理由:\n・周辺相場との差を一度に取り切らず、説明可能な幅に抑える\n・退去時損失を考慮し、継続入居の可能性を優先する\n・入居者向けには相場資料と維持管理費の変化を添えて説明する\n\n注意: 本提案は判断支援です。契約条項、過去交渉履歴、地域慣行を確認したうえで最終判断してください。`,
+        resident: `${unit.property} ${unit.unit} ご契約更新条件に関するご相談\n\n平素より当物件にお住まいいただきありがとうございます。\n\n次回更新にあたり、近隣の募集賃料、建物維持管理費、現在の契約条件を確認した結果、更新条件についてご相談したくご連絡いたしました。\n\n現時点のご提案: ${deltaText}\n\n本件は一方的な決定ではなく、資料をご確認いただいたうえでご相談するものです。ご不明点やご事情がある場合は、担当者までお知らせください。\n\n※この文面はデモ用ドラフトです。実際の送付前に契約内容と社内確認を行ってください。`,
+        memo: `社内交渉メモ\n\n物件: ${unit.property} ${unit.unit}\nエリア: ${unit.area}\n更新まで: ${unit.renewal_days}日\n入居年数: ${unit.tenure_years}年\n現行賃料: ${yen(unit.current_rent)}\n相場参考: ${yen(unit.market_rent)}\n\n推奨: ${rec.title}\n改定幅: ${rec.delta > 0 ? "+" : ""}${yen(rec.delta)}\n合意見込み: ${pct(rec.agree)}\n退去リスク: ${pct(rec.risk)}\n法務・運用注意度: ${pct(analysis.legalRisk)}\n\n確認事項:\n1. 契約書に賃料改定・更新料に関する条項があるか\n2. 値上げ理由を近傍同種物件、維持費、経済事情で説明できるか\n3. 借主が拒否した場合の社内対応フローがあるか\n4. 送付文面が威圧的または一方的な表現になっていないか`
+      };
+    }
+
+    function renderDoc(unit, analysis) {
+      const docs = makeDocuments(unit, analysis);
+      els.docOutput.textContent = docs[state.doc];
+    }
+
+    function render() {
+      const unit = currentUnit();
+      const analysis = analyze(unit);
+      state.latest = { unit, analysis };
+      els.selectedTitle.textContent = `${unit.property} ${unit.unit}`;
+      els.gapPct.textContent = pct(analysis.gapPct);
+      els.agreeScore.textContent = pct(analysis.agree);
+      els.deltaRent.textContent = analysis.delta > 0 ? `+${yen(analysis.delta)}` : yen(0);
+      els.vacancyBar.style.setProperty("--w", `${analysis.vacancyRisk}%`);
+      els.legalBar.style.setProperty("--w", `${analysis.legalRisk}%`);
+      els.riskNote.textContent = analysis.legalRisk > 60
+        ? "注意度が高めです。契約条項、改定理由、送付文面のレビューを先に行ってください。"
+        : "相場根拠と説明文を添えれば、担当者レビューに進められる水準です。";
+
+      renderUnits();
+      renderScenario(analysis);
+      renderDoc(unit, analysis);
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).catch(() => {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      });
+    }
+
+    document.getElementById("loadSample").addEventListener("click", () => {
+      state.units = [...sampleUnits];
+      state.selected = 0;
+      setInputs(state.units[0]);
+      render();
+    });
+
+    document.getElementById("csvInput").addEventListener("change", event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const rows = parseCsv(String(reader.result || ""));
+        if (rows.length) {
+          state.units = rows;
+          state.selected = 0;
+          setInputs(state.units[0]);
+          render();
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    [els.currentRent, els.marketRent, els.renewalDays, els.tenureYears, els.stationMin, els.buildingAge].forEach(input => {
+      input.addEventListener("input", render);
+    });
+
+    document.querySelectorAll(".segment").forEach(button => {
+      button.addEventListener("click", () => {
+        state.mode = button.dataset.mode;
+        document.querySelectorAll(".segment").forEach(item => item.classList.toggle("active", item === button));
+        render();
+      });
+    });
+
+    document.querySelectorAll(".doc-tab").forEach(button => {
+      button.addEventListener("click", () => {
+        state.doc = button.dataset.doc;
+        document.querySelectorAll(".doc-tab").forEach(item => item.classList.toggle("active", item === button));
+        render();
+      });
+    });
+
+    document.getElementById("copySummary").addEventListener("click", () => {
+      const { unit, analysis } = state.latest;
+      const rec = analysis.scenarios.find(s => s.key === analysis.recommended);
+      copyText(`${unit.property} ${unit.unit}: 推奨=${rec.title}, 改定幅=${rec.delta > 0 ? "+" : ""}${yen(rec.delta)}, 合意見込み=${pct(rec.agree)}, 退去リスク=${pct(rec.risk)}`);
+    });
+
+    document.getElementById("copyDoc").addEventListener("click", () => {
+      copyText(els.docOutput.textContent);
+    });
+
+    setInputs(state.units[0]);
+    render();
+    if (window.lucide) window.lucide.createIcons();
+  </script>
+</body>
+</html>
