@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>土地活用版 損益シミュレーター | パン・和菓子・コーヒー店</title>
+  <meta name="description" content="300平米前後の土地で、10坪/15坪/20坪の通常出店、コンテナ活用、新築自社運営、新築テナント貸しを比較する損益シミュレーター。">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20221f;
+      --sub: #5f665d;
+      --paper: #fbfaf5;
+      --panel: #ffffff;
+      --line: #ded9cc;
+      --green: #136f54;
+      --leaf: #e4f1e8;
+      --red: #b4493c;
+      --blue: #315c87;
+      --yellow: #d99b2b;
+      --soft-yellow: #fff3d5;
+      --shadow: 0 16px 40px rgba(41, 38, 30, .1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.65;
+    }
+
+    a { color: var(--blue); }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 74svh;
+      display: grid;
+      align-items: end;
+      padding: 22px 18px 46px;
+      color: #fff;
+      background:
+        linear-gradient(90deg, rgba(15, 22, 18, .86), rgba(15, 22, 18, .48) 56%, rgba(15, 22, 18, .18)),
+        url("https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1800&q=80") center / cover;
+    }
+
+    .hero-inner,
+    .wrap {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: absolute;
+      inset: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 22px;
+      color: #fff;
+    }
+
+    .brand {
+      font-weight: 800;
+      letter-spacing: .02em;
+    }
+
+    .nav a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      opacity: .9;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: end;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin-bottom: 18px;
+      font-size: 74px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      max-width: 740px;
+      margin-bottom: 24px;
+      font-size: 19px;
+      color: rgba(255, 255, 255, .9);
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 16px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: var(--ink);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn.secondary {
+      background: rgba(255, 255, 255, .12);
+      border-color: rgba(255, 255, 255, .55);
+      color: #fff;
+    }
+
+    main {
+      padding: 28px 18px 64px;
+    }
+
+    section {
+      margin: 0 auto 32px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      margin-bottom: 4px;
+      font-size: 36px;
+      line-height: 1.2;
+    }
+
+    .section-head p,
+    .small {
+      color: var(--sub);
+      font-size: 14px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--sub);
+      font-size: 12px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 34px;
+      line-height: 1.15;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      position: sticky;
+      top: 14px;
+      padding: 16px;
+    }
+
+    .control-group {
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+
+    .control-group:first-child {
+      border-top: 0;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .control-group h3 {
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 12px;
+      color: var(--sub);
+      font-size: 13px;
+    }
+
+    input[type="number"],
+    select {
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 10px;
+      border: 1px solid #cfc8b8;
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--green);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .card-head {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      background: #f7f4ec;
+    }
+
+    .card-head h3 {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      font-size: 18px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--leaf);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.warn {
+      background: var(--soft-yellow);
+      color: #815600;
+    }
+
+    .badge.red {
+      background: #f8dfda;
+      color: var(--red);
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    .numbers {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .num {
+      padding: 10px;
+      border-radius: 8px;
+      background: #faf8f1;
+      min-width: 0;
+    }
+
+    .num span {
+      display: block;
+      color: var(--sub);
+      font-size: 12px;
+    }
+
+    .num strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 20px;
+      line-height: 1.2;
+      word-break: keep-all;
+    }
+
+    .bar-wrap {
+      display: grid;
+      gap: 8px;
+      margin: 12px 0 14px;
+    }
+
+    .bar-line {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) 72px;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--sub);
+    }
+
+    .bar-track {
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #eee8db;
+    }
+
+    .bar {
+      height: 100%;
+      width: var(--w);
+      background: var(--green);
+    }
+
+    .bar.blue { background: var(--blue); }
+    .bar.yellow { background: var(--yellow); }
+    .bar.red { background: var(--red); }
+
+    .note {
+      margin: 0;
+      color: var(--sub);
+      font-size: 13px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+      white-space: normal;
+      min-width: 180px;
+    }
+
+    th {
+      color: var(--sub);
+      background: #f4f0e7;
+      font-size: 12px;
+      letter-spacing: .03em;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .insights {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .insight {
+      padding: 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .insight h3 {
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .references {
+      padding: 18px;
+      background: #f2eee5;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .references ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .references li {
+      margin: 8px 0;
+    }
+
+    @media (max-width: 980px) {
+      h1 {
+        font-size: 54px;
+      }
+
+      .summary-grid,
+      .insights {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav {
+        align-items: flex-start;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        min-height: 70svh;
+        padding-bottom: 30px;
+      }
+
+      h1 {
+        font-size: 28px;
+        line-height: 1.16;
+      }
+
+      .hero p {
+        font-size: 15px;
+      }
+
+      .section-head h2 {
+        font-size: 28px;
+      }
+
+      main {
+        padding: 22px 14px 48px;
+      }
+
+      .summary-grid,
+      .scenario-grid,
+      .insights,
+      .row,
+      .numbers {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        display: block;
+      }
+
+      .metric strong {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <nav class="nav" aria-label="ページ内ナビゲーション">
+      <div class="brand">Land Use Store Simulator</div>
+      <div class="nav-links">
+        <a href="#simulator">シミュレーター</a>
+        <a href="#comparison">比較表</a>
+        <a href="#plan">実行順</a>
+      </div>
+    </nav>
+    <div class="hero-inner">
+      <h1>300平米の土地で、店を借りるか、コンテナを使うか、建てるか。</h1>
+      <p>パン・和菓子・コーヒー店を1号店として判断するための土地活用版シミュレーターです。10坪/15坪/20坪の通常出店、コンテナ活用、新築自社運営、新築テナント貸しを同じ画面で比較できます。</p>
+      <div class="hero-actions">
+        <a class="btn" href="#simulator">数字を動かす</a>
+        <a class="btn secondary" href="#plan">進め方を見る</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="wrap" id="simulator">
+      <div class="section-head">
+        <div>
+          <h2>判断用ダッシュボード</h2>
+          <p>個人情報は不要です。土地・建物・人件費・商品比率だけで、損益分岐と必要客数を見ます。</p>
+        </div>
+        <p class="small">金額単位: 万円/月。客数は1日あたり。</p>
+      </div>
+
+      <div class="summary-grid" aria-live="polite">
+        <div class="metric">
+          <span>推奨初手</span>
+          <strong id="bestStart">計算中</strong>
+        </div>
+        <div class="metric">
+          <span>最小損益分岐売上</span>
+          <strong id="lowestBep">-</strong>
+        </div>
+        <div class="metric">
+          <span>標準15坪の必要客数</span>
+          <strong id="standardGuests">-</strong>
+        </div>
+        <div class="metric">
+          <span>土地の建築可能面積</span>
+          <strong id="buildableArea">-</strong>
+        </div>
+      </div>
+
+      <div class="grid">
+        <aside class="panel controls" aria-label="入力項目">
+          <div class="control-group">
+            <h3>土地と建物</h3>
+            <div class="row">
+              <label>土地面積 平米
+                <input data-input="landSqm" type="number" min="30" max="1000" step="10" value="300">
+              </label>
+              <label>建ぺい率 %
+                <input data-input="coverage" type="number" min="30" max="90" step="5" value="60">
+              </label>
+            </div>
+            <div class="row">
+              <label>外部物件家賃 坪単価
+                <input data-input="rentPerTsubo" type="number" min="8000" max="50000" step="500" value="16500">
+              </label>
+              <label>土地維持費
+                <input data-input="landMonthly" type="number" min="0" max="100" step="1" value="8">
+              </label>
+            </div>
+            <div class="row">
+              <label>コンテナ改修返済
+                <input data-input="containerLoan" type="number" min="0" max="200" step="1" value="22">
+              </label>
+              <label>新築返済/償却
+                <input data-input="newBuildLoan" type="number" min="0" max="400" step="5" value="95">
+              </label>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <h3>運営と人件費</h3>
+            <div class="row">
+              <label>店長人件費
+                <input data-input="managerCost" type="number" min="20" max="80" step="1" value="42">
+              </label>
+              <label>製造/販売人件費
+                <input data-input="staffCost" type="number" min="20" max="180" step="5" value="78">
+              </label>
+            </div>
+            <div class="row">
+              <label>営業日/月
+                <input data-input="openDays" type="number" min="20" max="31" step="1" value="26">
+              </label>
+              <label>客単価 円
+                <input data-input="ticket" type="number" min="300" max="2500" step="50" value="900">
+              </label>
+            </div>
+            <label>目標営業利益
+              <input data-input="targetProfit" type="number" min="0" max="300" step="5" value="50">
+            </label>
+          </div>
+
+          <div class="control-group">
+            <h3>商品比率</h3>
+            <label>コーヒー比率 <span id="coffeeLabel">25%</span>
+              <input data-input="mixCoffee" type="range" min="0" max="80" step="5" value="25">
+            </label>
+            <label>パン比率 <span id="breadLabel">35%</span>
+              <input data-input="mixBread" type="range" min="0" max="90" step="5" value="35">
+            </label>
+            <label>和菓子比率 <span id="wagashiLabel">15%</span>
+              <input data-input="mixWagashi" type="range" min="0" max="80" step="5" value="15">
+            </label>
+            <label>冷凍販売比率 <span id="frozenLabel">25%</span>
+              <input data-input="mixFrozen" type="range" min="0" max="90" step="5" value="25">
+            </label>
+            <p class="small" id="mixWarning">比率は自動で100%換算します。</p>
+          </div>
+
+          <div class="control-group">
+            <h3>テナント貸し</h3>
+            <div class="row">
+              <label>貸付面積 坪
+                <input data-input="leaseTsubo" type="number" min="5" max="100" step="1" value="36">
+              </label>
+              <label>貸付賃料 坪単価
+                <input data-input="leaseRentPerTsubo" type="number" min="5000" max="40000" step="500" value="13000">
+              </label>
+            </div>
+          </div>
+        </aside>
+
+        <div>
+          <div class="scenario-grid" id="scenarioGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap" id="comparison">
+      <div class="section-head">
+        <div>
+          <h2>6パターン比較表</h2>
+          <p>通常出店と土地活用を同じ損益構造で比較します。利益は目標売上達成時の月間目安です。</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>パターン</th>
+              <th>固定費</th>
+              <th>限界利益率</th>
+              <th>損益分岐売上</th>
+              <th>目標利益込み売上</th>
+              <th>必要客数/日</th>
+              <th>月間利益</th>
+              <th>初期判断</th>
+            </tr>
+          </thead>
+          <tbody id="comparisonBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="wrap" id="plan">
+      <div class="section-head">
+        <div>
+          <h2>この順で進める</h2>
+          <p>個人情報が必要になるまでは、この順番で実行して問題ありません。</p>
+        </div>
+      </div>
+      <div class="insights">
+        <article class="insight">
+          <h3>1. 住所なしで法規の当たりをつける</h3>
+          <p>用途地域、建ぺい率、容積率、防火指定、接道、上下水道を確認する準備をします。住所入力が必要になった時点で止めて確認します。</p>
+        </article>
+        <article class="insight">
+          <h3>2. コンテナは店舗化より実証拠点</h3>
+          <p>既存コンテナは建築物扱い・確認申請・消防・衛生設備の壁があります。まず予約販売、冷凍保管、受け渡し、週末テストに寄せます。</p>
+        </article>
+        <article class="insight">
+          <h3>3. 新築は需要確認後</h3>
+          <p>LPで予約、LINE登録、テスト販売の反応を取り、日商15万から20万円が見えるまでは、3店舗入りの建物を先に建てない判断が堅いです。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="references">
+        <h2>確認先</h2>
+        <ul>
+          <li><a href="https://www2.wagmap.jp/tokyo_tokeizu/Portal" target="_blank" rel="noopener">東京都 都市計画情報等インターネット提供サービス</a></li>
+          <li><a href="https://www.mlit.go.jp/jutakukentiku/build/jutakukentiku_house_tk_000058.html" target="_blank" rel="noopener">国土交通省 コンテナを利用した建築物の取扱い</a></li>
+          <li><a href="https://www.hokeniryo.metro.tokyo.lg.jp/shokuhin/kyokatodokede/index.html" target="_blank" rel="noopener">東京都 食品関係営業許可と届出</a></li>
+          <li><a href="https://www.hokeniryo1.metro.tokyo.lg.jp/shokuhin/haccp_torikumishien.html" target="_blank" rel="noopener">東京都 HACCP取組支援</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const TSUBO_TO_SQM = 3.305785;
+
+    const productMargins = {
+      coffee: 0.78,
+      bread: 0.58,
+      wagashi: 0.52,
+      frozen: 0.48
+    };
+
+    const scenarios = [
+      {
+        key: "tenant10",
+        name: "通常出店 10坪",
+        type: "store",
+        tsubo: 10,
+        baseOther: 58,
+        staffFactor: 0.78,
+        marginAdj: -0.01,
+        initial: "小さく始めるが席数と冷凍庫が窮屈"
+      },
+      {
+        key: "tenant15",
+        name: "通常出店 15坪",
+        type: "store",
+        tsubo: 15,
+        baseOther: 72,
+        staffFactor: 1,
+        marginAdj: 0,
+        initial: "1号店の標準比較線"
+      },
+      {
+        key: "tenant20",
+        name: "通常出店 20坪",
+        type: "store",
+        tsubo: 20,
+        baseOther: 86,
+        staffFactor: 1.18,
+        marginAdj: 0.01,
+        initial: "売場は強いが固定費が重い"
+      },
+      {
+        key: "container",
+        name: "コンテナ活用型",
+        type: "store",
+        tsubo: 12,
+        baseOther: 62,
+        staffFactor: 0.88,
+        marginAdj: -0.02,
+        useLand: true,
+        useContainer: true,
+        initial: "合法性確認後の実証拠点向き"
+      },
+      {
+        key: "newBuildOwn",
+        name: "新築自社運営型",
+        type: "store",
+        tsubo: 22,
+        baseOther: 92,
+        staffFactor: 1.25,
+        marginAdj: 0.015,
+        useLand: true,
+        useNewBuild: true,
+        initial: "需要確認後の本命候補"
+      },
+      {
+        key: "newBuildLease",
+        name: "新築テナント貸し型",
+        type: "lease",
+        tsubo: 36,
+        baseOther: 24,
+        marginAdj: 1,
+        useLand: true,
+        useNewBuild: true,
+        initial: "飲食運営より不動産収益の判断"
+      }
+    ];
+
+    const inputs = {};
+    const inputEls = document.querySelectorAll("[data-input]");
+    const scenarioGrid = document.getElementById("scenarioGrid");
+    const comparisonBody = document.getElementById("comparisonBody");
+
+    function yenMan(value) {
+      const rounded = Math.round(value * 10) / 10;
+      return rounded.toLocaleString("ja-JP") + "万";
+    }
+
+    function yen(value) {
+      return Math.round(value).toLocaleString("ja-JP") + "円";
+    }
+
+    function percent(value) {
+      return Math.round(value * 1000) / 10 + "%";
+    }
+
+    function getInputs() {
+      inputEls.forEach((el) => {
+        inputs[el.dataset.input] = Number(el.value);
+      });
+
+      const rawMix = {
+        coffee: inputs.mixCoffee,
+        bread: inputs.mixBread,
+        wagashi: inputs.mixWagashi,
+        frozen: inputs.mixFrozen
+      };
+      const total = Object.values(rawMix).reduce((sum, value) => sum + value, 0) || 1;
+      inputs.mix = {
+        coffee: rawMix.coffee / total,
+        bread: rawMix.bread / total,
+        wagashi: rawMix.wagashi / total,
+        frozen: rawMix.frozen / total
+      };
+      inputs.mixTotal = total;
+      return inputs;
+    }
+
+    function blendedMargin(data, scenario) {
+      const base =
+        data.mix.coffee * productMargins.coffee +
+        data.mix.bread * productMargins.bread +
+        data.mix.wagashi * productMargins.wagashi +
+        data.mix.frozen * productMargins.frozen;
+      return Math.min(0.72, Math.max(0.42, base + scenario.marginAdj));
+    }
+
+    function fixedCost(data, scenario) {
+      if (scenario.type === "lease") {
+        return data.landMonthly + data.newBuildLoan + scenario.baseOther;
+      }
+      const rent = scenario.useLand ? 0 : scenario.tsubo * data.rentPerTsubo / 10000;
+      const land = scenario.useLand ? data.landMonthly : 0;
+      const build = scenario.useNewBuild ? data.newBuildLoan : 0;
+      const container = scenario.useContainer ? data.containerLoan : 0;
+      const payroll = (data.managerCost + data.staffCost) * scenario.staffFactor;
+      return rent + land + build + container + payroll + scenario.baseOther;
+    }
+
+    function evaluateScenario(data, scenario) {
+      const fixed = fixedCost(data, scenario);
+
+      if (scenario.type === "lease") {
+        const revenue = data.leaseTsubo * data.leaseRentPerTsubo / 10000;
+        const profit = revenue - fixed;
+        const beRentPerTsubo = fixed * 10000 / Math.max(1, data.leaseTsubo);
+        return {
+          ...scenario,
+          fixed,
+          margin: 1,
+          breakEvenSales: fixed,
+          targetSales: fixed + data.targetProfit,
+          dailyGuests: 0,
+          targetGuests: 0,
+          plannedSales: revenue,
+          profit,
+          beRentPerTsubo,
+          status: profit >= data.targetProfit ? "強い" : profit >= 0 ? "黒字" : "要再設計"
+        };
+      }
+
+      const margin = blendedMargin(data, scenario);
+      const breakEvenSales = fixed / margin;
+      const targetSales = (fixed + data.targetProfit) / margin;
+      const dailyGuests = breakEvenSales * 10000 / data.openDays / data.ticket;
+      const targetGuests = targetSales * 10000 / data.openDays / data.ticket;
+      const plannedSales = targetSales;
+      const profit = plannedSales * margin - fixed;
+      return {
+        ...scenario,
+        fixed,
+        margin,
+        breakEvenSales,
+        targetSales,
+        dailyGuests,
+        targetGuests,
+        plannedSales,
+        profit,
+        status: dailyGuests <= 140 ? "軽い" : dailyGuests <= 190 ? "現実線" : "重い"
+      };
+    }
+
+    function statusClass(status) {
+      if (status === "軽い" || status === "強い") return "";
+      if (status === "現実線" || status === "黒字") return "warn";
+      return "red";
+    }
+
+    function renderBars(result, maxBep, maxFixed, maxProfitAbs) {
+      const bepWidth = Math.max(2, Math.min(100, result.breakEvenSales / maxBep * 100));
+      const fixedWidth = Math.max(2, Math.min(100, result.fixed / maxFixed * 100));
+      const profitWidth = Math.max(2, Math.min(100, Math.abs(result.profit) / maxProfitAbs * 100));
+      const profitClass = result.profit >= 0 ? "blue" : "red";
+      return `
+        <div class="bar-wrap" aria-hidden="true">
+          <div class="bar-line">
+            <span>固定費</span>
+            <div class="bar-track"><div class="bar yellow" style="--w:${fixedWidth}%"></div></div>
+            <span>${yenMan(result.fixed)}</span>
+          </div>
+          <div class="bar-line">
+            <span>損益分岐</span>
+            <div class="bar-track"><div class="bar" style="--w:${bepWidth}%"></div></div>
+            <span>${yenMan(result.breakEvenSales)}</span>
+          </div>
+          <div class="bar-line">
+            <span>利益</span>
+            <div class="bar-track"><div class="bar ${profitClass}" style="--w:${profitWidth}%"></div></div>
+            <span>${yenMan(result.profit)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      const data = getInputs();
+      document.getElementById("coffeeLabel").textContent = data.mixCoffee + "%";
+      document.getElementById("breadLabel").textContent = data.mixBread + "%";
+      document.getElementById("wagashiLabel").textContent = data.mixWagashi + "%";
+      document.getElementById("frozenLabel").textContent = data.mixFrozen + "%";
+      document.getElementById("mixWarning").textContent = `入力合計 ${data.mixTotal}% を100%換算して計算中。`;
+
+      const results = scenarios.map((scenario) => evaluateScenario(data, scenario));
+      const storeResults = results.filter((result) => result.type === "store");
+      const lowest = storeResults.reduce((best, current) => current.breakEvenSales < best.breakEvenSales ? current : best, storeResults[0]);
+      const standard = results.find((result) => result.key === "tenant15");
+      const buildableSqm = data.landSqm * data.coverage / 100;
+      const buildableTsubo = buildableSqm / TSUBO_TO_SQM;
+
+      document.getElementById("bestStart").textContent = lowest.name.replace("型", "");
+      document.getElementById("lowestBep").textContent = yenMan(lowest.breakEvenSales);
+      document.getElementById("standardGuests").textContent = Math.ceil(standard.dailyGuests).toLocaleString("ja-JP") + "組";
+      document.getElementById("buildableArea").textContent = `${Math.floor(buildableSqm)}平米 / ${Math.floor(buildableTsubo)}坪`;
+
+      const maxBep = Math.max(...results.map((result) => result.breakEvenSales), 1);
+      const maxFixed = Math.max(...results.map((result) => result.fixed), 1);
+      const maxProfitAbs = Math.max(...results.map((result) => Math.abs(result.profit)), 1);
+
+      scenarioGrid.innerHTML = results.map((result) => {
+        const salesLabel = result.type === "lease" ? "想定賃料収入" : "目標売上";
+        const guestsLabel = result.type === "lease" ? "必要坪賃料" : "必要客数/日";
+        const guestsValue = result.type === "lease" ? yen(result.beRentPerTsubo) : `${Math.ceil(result.targetGuests)}組`;
+        return `
+          <article class="card">
+            <div class="card-head">
+              <h3>${result.name}<span class="badge ${statusClass(result.status)}">${result.status}</span></h3>
+              <p class="note">${result.initial}</p>
+            </div>
+            <div class="card-body">
+              <div class="numbers">
+                <div class="num"><span>損益分岐</span><strong>${yenMan(result.breakEvenSales)}</strong></div>
+                <div class="num"><span>${salesLabel}</span><strong>${yenMan(result.plannedSales)}</strong></div>
+                <div class="num"><span>${guestsLabel}</span><strong>${guestsValue}</strong></div>
+              </div>
+              ${renderBars(result, maxBep, maxFixed, maxProfitAbs)}
+              <p class="note">${result.type === "lease"
+                ? `貸付面積 ${data.leaseTsubo}坪、想定賃料 ${yen(data.leaseRentPerTsubo)}/坪で計算。`
+                : `限界利益率 ${percent(result.margin)}、客単価 ${yen(data.ticket)}で計算。`}
+              </p>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      comparisonBody.innerHTML = results.map((result) => {
+        const guests = result.type === "lease" ? "-" : Math.ceil(result.targetGuests).toLocaleString("ja-JP") + "組";
+        return `
+          <tr>
+            <td><strong>${result.name}</strong><br><span class="small">${result.initial}</span></td>
+            <td>${yenMan(result.fixed)}</td>
+            <td>${percent(result.margin)}</td>
+            <td>${yenMan(result.breakEvenSales)}</td>
+            <td>${yenMan(result.targetSales)}</td>
+            <td>${guests}</td>
+            <td>${yenMan(result.profit)}</td>
+            <td><span class="badge ${statusClass(result.status)}">${result.status}</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    inputEls.forEach((el) => el.addEventListener("input", render));
+    render();
+  </script>
+</body>
+</html>
